@@ -1,8 +1,10 @@
 from flask import Flask, jsonify, request
 from flask_mysqldb import MySQL
+import time    
 import json
 
-
+t=time.localtime()
+now = time.strftime('%Y-%m-%d %H:%M:%S',t)
 app = Flask(__name__)
 
 app.config['MYSQL_HOST'] = 'localhost'
@@ -133,6 +135,63 @@ AND c.name LIKE '%"""+category+"""%';"""
     jsondict = {"data" : jsontrt}
     return jsonify(jsondict)
 
+@app.route("/customer")
+def customer():
+    cursor = mysql.connection.cursor()
+    customername = request.args.get('customername')
+    customerid = request.args.get('customerid')
+    if customerid == None:
+        if customername == None:
+            customername = ""
+        searchterm = """SELECT * from customer as c where c.first_name LIKE '%"""+customername+"""%' or  c.last_name LIKE '%"""+customername+"""%';"""
+    else:
+        searchterm = """select * from customer where customer_id = """+ customerid +""""""
+    cursor.execute(searchterm)
+    row_headers=[x[0] for x in cursor.description]
+    toret = cursor.fetchall()
+    jsontrt = []
+    cursor.close()
+    for i in toret:
+        jsontrt.append(dict(zip(row_headers,i)))
+    cursor.close()
+    jsondict = {"data" : jsontrt}
+    return jsonify(jsondict)
+
+@app.route("/customerMoreInfo")
+def customerMoreInfo():
+    cursor = mysql.connection.cursor()
+    customerid = request.args.get('customerid')
+    searchterm = """SELECT r.*
+FROM customer AS c
+JOIN rental AS r ON c.customer_id = r.customer_id
+WHERE c.customer_id = """+ customerid+""";"""
+    cursor.execute(searchterm)
+    row_headers=[x[0] for x in cursor.description]
+    toret = cursor.fetchall()
+    jsontrt = []
+    cursor.close()
+    for i in toret:
+        jsontrt.append(dict(zip(row_headers,i)))
+    cursor.close()
+    jsondict = {"data" : jsontrt}
+    return jsonify(jsondict)
+
+@app.route("/addcustomer", methods=['POST'])
+def addCustomer():
+    jsondata = request.get_json()
+    storeid = jsondata.get('storenum')
+    fname = jsondata.get('fname')
+    lname = jsondata.get('lname')
+    email = jsondata.get('email')
+    address = jsondata.get('address')
+    cursor = mysql.connection.cursor()
+    try:
+        cursor.execute("""insert into customer(store_id,first_name,last_name,email,address_id,active,last_update) values(%s,%s,%s,%s,%s,%s,%s)""",(storeid,fname,lname,email,address,'1',now))
+        mysql.connection.commit()
+        cursor.close()
+        return jsonify({"status" : "success"})
+    except Exception as e:
+        return jsonify({"status": str(e)})
 
 if __name__  == "__main__":
     app.run(debug=True)
