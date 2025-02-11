@@ -1,10 +1,11 @@
 # Sakila DB Flask Backend
-Uses Sakila DB on MySQL and provides api to show and search data taht can be used by a frontend.
+Uses FLASK on Sakila MySQL database and provides api to show and search data taht can be used by a frontend.
+Sakila DB provides a pre-made movie distribution MySQL DB.
 
 ## Description
 
 NJIT CS490 individual project:
-Using Flask to create a backend, this would be the application tier that will interact with data tier (Sakila DB) and provide API that can be used by the Presentation tier.
+Using Flask to create a backend, this would be the application tier that will interact with data tier (Sakila DB) and provide API that can be used by the Presentation tier (uses REACT.JS).
 
 ## Getting Started
 
